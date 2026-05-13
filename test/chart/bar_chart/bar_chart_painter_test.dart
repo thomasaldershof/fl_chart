@@ -2671,7 +2671,7 @@ void main() {
       );
       final resultNoLabel =
           verify(mockCanvasWrapper.drawRRect(captureAny, captureAny))
-            ..called(2);
+            ..called(3);
       final rrectNoLabel = resultNoLabel.captured[0] as RRect;
 
       // Now draw tooltip WITH label
@@ -2688,7 +2688,7 @@ void main() {
       );
       final resultWithLabel =
           verify(mockCanvasWrapper.drawRRect(captureAny, captureAny))
-            ..called(2);
+            ..called(3);
       final rrectWithLabel = resultWithLabel.captured[0] as RRect;
 
       // With a visible label, the tooltip should be shifted further up
@@ -2831,7 +2831,7 @@ void main() {
       );
       final resultNoLabel =
           verify(mockCanvasWrapper.drawRRect(captureAny, captureAny))
-            ..called(2);
+            ..called(3);
       final rrectNoLabel = resultNoLabel.captured[0] as RRect;
 
       // Now draw tooltip WITH label
@@ -2848,7 +2848,7 @@ void main() {
       );
       final resultWithLabel =
           verify(mockCanvasWrapper.drawRRect(captureAny, captureAny))
-            ..called(2);
+            ..called(3);
       final rrectWithLabel = resultWithLabel.captured[0] as RRect;
 
       // With a visible label on a downward bar, tooltip should be shifted further down
