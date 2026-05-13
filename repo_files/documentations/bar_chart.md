@@ -121,6 +121,7 @@ Extends [FlLabel](base_chart.md#FlLabel).
  |fitInsideVertically| forces tooltip to vertically shift inside the chart's bounding box| false|
  |direction| Controls showing tooltip on top or bottom, default is auto.| auto|
  |getTooltipColor|a callback that retrieves the Color for each rod separately from the given [BarChartGroupData](#BarChartGroupData) to set the background color of the tooltip bubble|Colors.blueGrey.darken(15)| 
+|shadow|drops a shadow behind the tooltip|Shadow(color: Colors.transparent)|
 
 ### BarTooltipItem
 |PropName|Description|default value|

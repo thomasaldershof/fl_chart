@@ -62,6 +62,7 @@ When you change the chart's state, it animates to the new state internally (usin
  |fitInsideHorizontally| forces tooltip to horizontally shift inside the chart's bounding box| false|
  |fitInsideVertically| forces tooltip to vertically shift inside the chart's bounding box| false|
  |getTooltipColor|a callback that retrieves the Color for each touched spot separately from the given [ScatterSpot](#ScatterSpot) to set the background color of the tooltip bubble|Colors.blueGrey.darken(15)|
+|shadow|drops a shadow behind the tooltip|Shadow(color: Colors.transparent)|
 
 ### ScatterTooltipItem
 |PropName|Description|default value|
