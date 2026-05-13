@@ -533,6 +533,7 @@ class ScatterTouchTooltipData with EquatableMixin {
         rotateAngle,
         tooltipBorder,
         getTooltipColor,
+        shadow,
       ];
 
   /// Copies current [ScatterTouchTooltipData] to a new [ScatterTouchTooltipData],
@@ -548,6 +549,7 @@ class ScatterTouchTooltipData with EquatableMixin {
     double? rotateAngle,
     BorderSide? tooltipBorder,
     GetScatterTooltipColor? getTooltipColor,
+    Shadow? shadow,
   }) =>
       ScatterTouchTooltipData(
         tooltipPadding: tooltipPadding ?? this.tooltipPadding,
@@ -563,6 +565,7 @@ class ScatterTouchTooltipData with EquatableMixin {
         rotateAngle: rotateAngle ?? this.rotateAngle,
         tooltipBorder: tooltipBorder ?? this.tooltipBorder,
         getTooltipColor: getTooltipColor ?? this.getTooltipColor,
+        shadow: shadow ?? this.shadow,
       );
 }
 

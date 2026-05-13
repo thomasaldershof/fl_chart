@@ -848,6 +848,7 @@ class BarTouchTooltipData with EquatableMixin {
         rotateAngle,
         tooltipBorder,
         getTooltipColor,
+        shadow,
       ];
 }
 
