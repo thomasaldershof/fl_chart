@@ -55,9 +55,8 @@ class PieChartSample3State extends State {
       final widgetSize = isTouched ? 55.0 : 40.0;
       const shadows = [Shadow(color: Colors.black, blurRadius: 2)];
 
-      switch (i) {
-        case 0:
-          return PieChartSectionData(
+      return switch (i) {
+        0 => PieChartSectionData(
             color: AppColors.contentColorBlue,
             value: 40,
             title: '40%',
@@ -74,9 +73,8 @@ class PieChartSample3State extends State {
               borderColor: AppColors.contentColorBlack,
             ),
             badgePositionPercentageOffset: .98,
-          );
-        case 1:
-          return PieChartSectionData(
+          ),
+        1 => PieChartSectionData(
             color: AppColors.contentColorYellow,
             value: 30,
             title: '30%',
@@ -93,9 +91,8 @@ class PieChartSample3State extends State {
               borderColor: AppColors.contentColorBlack,
             ),
             badgePositionPercentageOffset: .98,
-          );
-        case 2:
-          return PieChartSectionData(
+          ),
+        2 => PieChartSectionData(
             color: AppColors.contentColorPurple,
             value: 16,
             title: '16%',
@@ -112,9 +109,8 @@ class PieChartSample3State extends State {
               borderColor: AppColors.contentColorBlack,
             ),
             badgePositionPercentageOffset: .98,
-          );
-        case 3:
-          return PieChartSectionData(
+          ),
+        3 => PieChartSectionData(
             color: AppColors.contentColorGreen,
             value: 15,
             title: '15%',
@@ -131,10 +127,9 @@ class PieChartSample3State extends State {
               borderColor: AppColors.contentColorBlack,
             ),
             badgePositionPercentageOffset: .98,
-          );
-        default:
-          throw Exception('Oh no');
-      }
+          ),
+        _ => throw StateError('Invalid'),
+      };
     });
   }
 }
@@ -145,6 +140,7 @@ class _Badge extends StatelessWidget {
     required this.size,
     required this.borderColor,
   });
+
   final String svgAsset;
   final double size;
   final Color borderColor;

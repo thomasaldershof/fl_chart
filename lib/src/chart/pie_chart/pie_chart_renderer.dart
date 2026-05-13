@@ -151,12 +151,20 @@ class RenderPieChart extends RenderBaseChart<PieTouchResponse>
     var counter = 0;
     while (child != null) {
       final childParentData = child.parentData! as MultiChildLayoutParentData;
-      if (data.sections[counter].value > 0) {
+      if (counter < data.sections.length && data.sections[counter].value > 0) {
         context.paintChild(child, childParentData.offset + offset);
       }
       child = childParentData.nextSibling;
       counter++;
     }
+  }
+
+  @override
+  bool hitTestSelf(Offset position) {
+    if (!targetData.pieTouchData.enabled) {
+      return false;
+    }
+    return super.hitTestSelf(position);
   }
 
   @override

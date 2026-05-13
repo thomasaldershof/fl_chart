@@ -214,7 +214,6 @@ class BarChartGroupData with EquatableMixin {
   ///
   /// Note [x] does not reorder bars from [barRods]; instead, it gets the title
   /// in [x] position through [SideTitles.getTitlesWidget] function.
-  @required
   final int x;
 
   /// If set true, it will show bars below/above each other.
@@ -341,6 +340,7 @@ class BarChartRodData with EquatableMixin {
     BorderSide? borderSide,
     BackgroundBarChartRodData? backDrawRodData,
     List<BarChartRodStackItem>? rodStackItems,
+    this.label = const BarChartRodLabel(show: false),
   })  : fromY = fromY ?? 0,
         color =
             color ?? ((color == null && gradient == null) ? Colors.cyan : null),
@@ -396,6 +396,9 @@ class BarChartRodData with EquatableMixin {
   /// you can fill up the [rodStackItems] to have a Stacked Chart.
   final List<BarChartRodStackItem> rodStackItems;
 
+  /// Optional label to display near the rod tip.
+  final BarChartRodLabel label;
+
   /// Determines the upward or downward direction
   bool isUpward() => toY >= fromY;
 
@@ -413,6 +416,7 @@ class BarChartRodData with EquatableMixin {
     BorderSide? borderSide,
     BackgroundBarChartRodData? backDrawRodData,
     List<BarChartRodStackItem>? rodStackItems,
+    BarChartRodLabel? label,
   }) =>
       BarChartRodData(
         fromY: fromY ?? this.fromY,
@@ -426,6 +430,7 @@ class BarChartRodData with EquatableMixin {
         borderSide: borderSide ?? this.borderSide,
         backDrawRodData: backDrawRodData ?? this.backDrawRodData,
         rodStackItems: rodStackItems ?? this.rodStackItems,
+        label: label ?? this.label,
       );
 
   /// Lerps a [BarChartRodData] based on [t] value, check [Tween.lerp].
@@ -447,6 +452,7 @@ class BarChartRodData with EquatableMixin {
         ),
         rodStackItems:
             lerpBarChartRodStackList(a.rodStackItems, b.rodStackItems, t),
+        label: BarChartRodLabel.lerpBarChartRodLabel(a.label, b.label, t),
       );
 
   /// Used for equality check, see [EquatableMixin].
@@ -463,6 +469,7 @@ class BarChartRodData with EquatableMixin {
         rodStackItems,
         color,
         gradient,
+        label,
       ];
 }
 
@@ -471,7 +478,7 @@ class BarChartRodData with EquatableMixin {
 /// Each [BarChartRodData] can have a list of [BarChartRodStackItem] (with different colors
 /// and position) to represent a Stacked Chart rod,
 class BarChartRodStackItem with EquatableMixin {
-  /// Renders a section of Stacked Chart from [fromY] to [toY] with [color]
+  /// Renders a section of Stacked Chart from [fromY] to [toY] with [color] or [gradient]
   /// for example if you want to have a Stacked Chart with three colors:
   /// ```dart
   /// BarChartRodData(
@@ -484,12 +491,21 @@ class BarChartRodStackItem with EquatableMixin {
   ///   ]
   /// )
   /// ```
+  /// To use the [gradient], set [color] to null
   BarChartRodStackItem(
     this.fromY,
     this.toY,
-    this.color, [
+    this.color, {
+    this.gradient,
+    this.label,
+    this.labelStyle,
     this.borderSide = Utils.defaultBorderSide,
-  ]);
+  }) : assert(
+          color != null || gradient != null,
+          'You must provide either a color or gradient',
+        );
+  final String? label;
+  final TextStyle? labelStyle;
 
   /// Renders a Stacked Chart section from [fromY]
   final double fromY;
@@ -498,7 +514,10 @@ class BarChartRodStackItem with EquatableMixin {
   final double toY;
 
   /// Renders a Stacked Chart section with [color]
-  final Color color;
+  final Color? color;
+
+  /// Renders a Stacked Chart section with [gradient]
+  final Gradient? gradient;
 
   /// Renders border stroke for a Stacked Chart section
   final BorderSide borderSide;
@@ -509,13 +528,19 @@ class BarChartRodStackItem with EquatableMixin {
     double? fromY,
     double? toY,
     Color? color,
+    Gradient? gradient,
+    String? label,
+    TextStyle? labelStyle,
     BorderSide? borderSide,
   }) =>
       BarChartRodStackItem(
         fromY ?? this.fromY,
         toY ?? this.toY,
         color ?? this.color,
-        borderSide ?? this.borderSide,
+        gradient: gradient ?? this.gradient,
+        label: label ?? this.label,
+        labelStyle: labelStyle ?? this.labelStyle,
+        borderSide: borderSide ?? this.borderSide,
       );
 
   /// Lerps a [BarChartRodStackItem] based on [t] value, check [Tween.lerp].
@@ -527,13 +552,17 @@ class BarChartRodStackItem with EquatableMixin {
       BarChartRodStackItem(
         lerpDouble(a.fromY, b.fromY, t)!,
         lerpDouble(a.toY, b.toY, t)!,
-        Color.lerp(a.color, b.color, t)!,
-        BorderSide.lerp(a.borderSide, b.borderSide, t),
+        Color.lerp(a.color, b.color, t),
+        gradient: Gradient.lerp(a.gradient, b.gradient, t),
+        label: b.label,
+        labelStyle: b.labelStyle,
+        borderSide: BorderSide.lerp(a.borderSide, b.borderSide, t),
       );
 
   /// Used for equality check, see [EquatableMixin].
   @override
-  List<Object?> get props => [fromY, toY, color, borderSide];
+  List<Object?> get props =>
+      [fromY, toY, color, gradient, label, labelStyle, borderSide];
 }
 
 /// Holds values to draw a rod in rear of the main rod.
@@ -713,7 +742,10 @@ class BarTouchTooltipData with EquatableMixin {
   /// [BarChart] shows a tooltip popup on top of rods automatically when touch happens,
   /// otherwise you can show it manually using [BarChartGroupData.showingTooltipIndicators].
   /// Tooltip shows on top of rods, with [getTooltipColor] as a background color.
-  /// You can set the corner radius using [tooltipBorderRadius],
+  /// You can set the corner radius using [tooltipRoundedRadius],
+  /// or if you need a custom border, you can use [tooltipBorderRadius].
+  /// Note that if both [tooltipRoundedRadius] and [tooltipBorderRadius] are set,
+  /// the value from [tooltipBorderRadius] will be used.
   /// If you want to have a padding inside the tooltip, fill [tooltipPadding],
   /// or If you want to have a bottom margin, set [tooltipMargin].
   /// Content of the tooltip will provide using [getTooltipItem] callback, you can override it
@@ -1012,6 +1044,59 @@ class BarChartSpotErrorRangeCallbackInput
         rod,
         barRodIndex,
       ];
+}
+
+/// Label configuration for a bar chart rod.
+class BarChartRodLabel extends FlLabel {
+  const BarChartRodLabel({
+    super.show,
+    super.text,
+    super.style,
+    super.angle,
+    super.textDirection,
+    this.offset = const Offset(0, 8),
+  });
+
+  /// Offset from the rod tip to position the label.
+  /// [Offset.dx] shifts horizontally, [Offset.dy] shifts vertically.
+  final Offset offset;
+
+  /// Lerps a [BarChartRodLabel] based on [t] value.
+  static BarChartRodLabel lerpBarChartRodLabel(
+    BarChartRodLabel a,
+    BarChartRodLabel b,
+    double t,
+  ) {
+    return BarChartRodLabel(
+      show: b.show,
+      text: b.text,
+      style: TextStyle.lerp(a.style, b.style, t),
+      angle: lerpDouble(a.angle, b.angle, t)!,
+      textDirection: b.textDirection,
+      offset: Offset.lerp(a.offset, b.offset, t)!,
+    );
+  }
+
+  @override
+  BarChartRodLabel copyWith({
+    bool? show,
+    String? text,
+    TextStyle? style,
+    double? angle,
+    TextDirection? textDirection,
+    Offset? offset,
+  }) =>
+      BarChartRodLabel(
+        show: show ?? this.show,
+        text: text ?? this.text,
+        style: style ?? this.style,
+        angle: angle ?? this.angle,
+        textDirection: textDirection ?? this.textDirection,
+        offset: offset ?? this.offset,
+      );
+
+  @override
+  List<Object?> get props => [show, text, style, angle, textDirection, offset];
 }
 
 /// It lerps a [BarChartData] to another [BarChartData] (handles animation for updating values)

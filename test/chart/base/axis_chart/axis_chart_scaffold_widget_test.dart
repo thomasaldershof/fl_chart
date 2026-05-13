@@ -49,7 +49,7 @@ void main() {
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 10,
-          getTitlesWidget: (double value, TitleMeta meta) {
+          getTitlesWidget: (value, meta) {
             return Text('L-${value.toInt()}');
           },
           interval: 1,
@@ -61,7 +61,7 @@ void main() {
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 20,
-          getTitlesWidget: (double value, TitleMeta meta) {
+          getTitlesWidget: (value, meta) {
             return Text('T-${value.toInt()}');
           },
           interval: 1,
@@ -73,7 +73,7 @@ void main() {
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 30,
-          getTitlesWidget: (double value, TitleMeta meta) {
+          getTitlesWidget: (value, meta) {
             return Text('R-${value.toInt()}');
           },
           interval: 1,
@@ -85,7 +85,7 @@ void main() {
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 40,
-          getTitlesWidget: (double value, TitleMeta meta) {
+          getTitlesWidget: (value, meta) {
             return Text('B-${value.toInt()}');
           },
           interval: 1,
@@ -111,7 +111,7 @@ void main() {
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 10,
-          getTitlesWidget: (double value, TitleMeta meta) {
+          getTitlesWidget: (value, meta) {
             return Text('L-${value.toInt()}');
           },
           interval: 1,
@@ -132,7 +132,7 @@ void main() {
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 10,
-          getTitlesWidget: (double value, TitleMeta meta) {
+          getTitlesWidget: (value, meta) {
             return Text('L-${value.toInt()}');
           },
           interval: 1,
@@ -153,7 +153,7 @@ void main() {
         axisNameWidget: const Icon(Icons.arrow_left),
         sideTitles: SideTitles(
           reservedSize: 10,
-          getTitlesWidget: (double value, TitleMeta meta) {
+          getTitlesWidget: (value, meta) {
             return Text('L-${value.toInt()}');
           },
           interval: 1,
@@ -167,7 +167,7 @@ void main() {
 
   testWidgets(
     'LineChart with no titles',
-    (WidgetTester tester) async {
+    (tester) async {
       Size? chartDrawingSize;
       await tester.pumpWidget(
         MaterialApp(
@@ -200,7 +200,7 @@ void main() {
 
   testWidgets(
     'LineChart with all titles',
-    (WidgetTester tester) async {
+    (tester) async {
       Size? chartDrawingSize;
       await tester.pumpWidget(
         MaterialApp(
@@ -258,7 +258,7 @@ void main() {
 
   testWidgets(
     'LineChart with only left titles',
-    (WidgetTester tester) async {
+    (tester) async {
       Size? chartDrawingSize;
       await tester.pumpWidget(
         MaterialApp(
@@ -297,7 +297,7 @@ void main() {
 
   testWidgets(
     'LineChart with only left titles without axis name',
-    (WidgetTester tester) async {
+    (tester) async {
       Size? chartDrawingSize;
       await tester.pumpWidget(
         MaterialApp(
@@ -335,7 +335,7 @@ void main() {
 
   testWidgets(
     'LineChart with only left axis name without side titles',
-    (WidgetTester tester) async {
+    (tester) async {
       Size? chartDrawingSize;
       await tester.pumpWidget(
         MaterialApp(
@@ -369,7 +369,7 @@ void main() {
 
   testWidgets(
     'LineChart with rotationQuarterTurns',
-    (WidgetTester tester) async {
+    (tester) async {
       for (var rotationTurns = 0; rotationTurns <= 8; rotationTurns++) {
         Size? chartDrawingSize;
         await tester.pumpWidget(
@@ -413,7 +413,7 @@ void main() {
     for (final scaleAxis in FlScaleAxis.scalingEnabledAxis) {
       testWidgets(
         'wraps chart in interactive viewer when scaling is $scaleAxis',
-        (WidgetTester tester) async {
+        (tester) async {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
@@ -445,7 +445,7 @@ void main() {
 
     testWidgets(
       'does not wrap chart in interactive viewer when scaling is disabled',
-      (WidgetTester tester) async {
+      (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -479,7 +479,7 @@ void main() {
     );
 
     testWidgets('passes interaction parameters to interactive viewer',
-        (WidgetTester tester) async {
+        (tester) async {
       Future<void> pumpTestWidget(AxisChartScaffoldWidget widget) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -557,8 +557,7 @@ void main() {
       );
     });
 
-    testWidgets('asserts minScale is greater than 1',
-        (WidgetTester tester) async {
+    testWidgets('asserts minScale is greater than 1', (tester) async {
       expect(
         () => AxisChartScaffoldWidget(
           data: lineChartDataWithAllTitles,
@@ -573,7 +572,7 @@ void main() {
     });
 
     testWidgets('asserts maxScale is greater than or equal to minScale',
-        (WidgetTester tester) async {
+        (tester) async {
       expect(
         () => AxisChartScaffoldWidget(
           data: lineChartDataWithAllTitles,
@@ -589,8 +588,7 @@ void main() {
 
     group('scaling and panning', () {
       group('touch gesture', () {
-        testWidgets('does not scale with FlScaleAxis.none',
-            (WidgetTester tester) async {
+        testWidgets('does not scale with FlScaleAxis.none', (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -631,8 +629,7 @@ void main() {
           expect(chartVirtualRect, isNull);
         });
 
-        testWidgets('scales freely with FlScaleAxis.free',
-            (WidgetTester tester) async {
+        testWidgets('scales freely with FlScaleAxis.free', (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -682,7 +679,7 @@ void main() {
         });
 
         testWidgets('scales horizontally with FlScaleAxis.horizontal',
-            (WidgetTester tester) async {
+            (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -736,7 +733,7 @@ void main() {
         });
 
         testWidgets('scales vertically with FlScaleAxis.vertical',
-            (WidgetTester tester) async {
+            (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -793,7 +790,7 @@ void main() {
       group('trackpad scroll', () {
         testWidgets(
           'does not scale with FlScaleAxis.none when trackpadScrollCausesScale is true',
-          (WidgetTester tester) async {
+          (tester) async {
             Rect? chartVirtualRect;
             await tester.pumpWidget(
               MaterialApp(
@@ -836,7 +833,7 @@ void main() {
           testWidgets(
             'does not scale when trackpadScrollCausesScale is false '
             'for $scaleAxis',
-            (WidgetTester tester) async {
+            (tester) async {
               Rect? chartVirtualRect;
               await tester.pumpWidget(
                 MaterialApp(
@@ -878,7 +875,7 @@ void main() {
         }
 
         testWidgets('scales horizontally with FlScaleAxis.horizontal',
-            (WidgetTester tester) async {
+            (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -926,7 +923,7 @@ void main() {
         });
 
         testWidgets('scales vertically with FlScaleAxis.vertical',
-            (WidgetTester tester) async {
+            (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -973,8 +970,7 @@ void main() {
           expect(chartVirtualRect!.top, isNegative);
         });
 
-        testWidgets('scales freely with FlScaleAxis.free',
-            (WidgetTester tester) async {
+        testWidgets('scales freely with FlScaleAxis.free', (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -1020,7 +1016,7 @@ void main() {
 
       group('pans', () {
         testWidgets('only horizontally with FlScaleAxis.horizontal',
-            (WidgetTester tester) async {
+            (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -1047,7 +1043,11 @@ void main() {
             ),
           );
 
-          final chartCenterOffset = tester.getCenter(find.byType(ColoredBox));
+          final chartCenterOffset = tester.getCenter(
+            find.byWidgetPredicate(
+              (widget) => widget is ColoredBox && widget.color == Colors.red,
+            ),
+          );
           final scaleStart1 = chartCenterOffset + const Offset(10, 10);
           final scaleStart2 = chartCenterOffset - const Offset(10, 10);
           final scaleEnd1 = chartCenterOffset + const Offset(100, 100);
@@ -1077,7 +1077,7 @@ void main() {
         });
 
         testWidgets('only vertically with FlScaleAxis.vertical',
-            (WidgetTester tester) async {
+            (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -1104,7 +1104,11 @@ void main() {
             ),
           );
 
-          final chartCenterOffset = tester.getCenter(find.byType(ColoredBox));
+          final chartCenterOffset = tester.getCenter(
+            find.byWidgetPredicate(
+              (widget) => widget is ColoredBox && widget.color == Colors.red,
+            ),
+          );
           final scaleStart1 = chartCenterOffset + const Offset(10, 10);
           final scaleStart2 = chartCenterOffset - const Offset(10, 10);
           final scaleEnd1 = chartCenterOffset + const Offset(100, 100);
@@ -1132,8 +1136,7 @@ void main() {
           );
         });
 
-        testWidgets('freely with FlScaleAxis.free',
-            (WidgetTester tester) async {
+        testWidgets('freely with FlScaleAxis.free', (tester) async {
           Rect? chartVirtualRect;
           await tester.pumpWidget(
             MaterialApp(
@@ -1160,7 +1163,11 @@ void main() {
             ),
           );
 
-          final chartCenterOffset = tester.getCenter(find.byType(ColoredBox));
+          final chartCenterOffset = tester.getCenter(
+            find.byWidgetPredicate(
+              (widget) => widget is ColoredBox && widget.color == Colors.red,
+            ),
+          );
           final scaleStart1 = chartCenterOffset + const Offset(10, 10);
           final scaleStart2 = chartCenterOffset - const Offset(10, 10);
           final scaleEnd1 = chartCenterOffset + const Offset(100, 100);
@@ -1194,8 +1201,7 @@ void main() {
       });
     });
 
-    testWidgets('passes chart rect to SideTitlesWidgets',
-        (WidgetTester tester) async {
+    testWidgets('passes chart rect to SideTitlesWidgets', (tester) async {
       Rect? chartVirtualRect;
       await tester.pumpWidget(
         MaterialApp(
@@ -1222,7 +1228,11 @@ void main() {
         ),
       );
 
-      final chartCenterOffset = tester.getCenter(find.byType(ColoredBox));
+      final chartCenterOffset = tester.getCenter(
+        find.byWidgetPredicate(
+          (widget) => widget is ColoredBox && widget.color == Colors.red,
+        ),
+      );
       final scaleStart1 = chartCenterOffset + const Offset(10, 10);
       final scaleStart2 = chartCenterOffset - const Offset(10, 10);
       final scaleEnd1 = chartCenterOffset + const Offset(100, 100);
@@ -1245,9 +1255,9 @@ void main() {
 
     testWidgets(
       'Initializes zoomed chart rect when controller scale != 1.0',
-      (WidgetTester tester) async {
+      (tester) async {
         final controller = TransformationController(
-          Matrix4.identity()..scale(3.0),
+          Matrix4.identity()..scaleByDouble(3, 3, 3, 1),
         );
         Rect? chartVirtualRect;
         await tester.pumpWidget(
@@ -1317,13 +1327,14 @@ void main() {
       testWidgets(
         'oldWidget.controller is null and widget.controller is null: '
         'keeps old controller',
-        (WidgetTester tester) async {
+        (tester) async {
           final actualChartVirtualRects = <Object?>[isNotScaled];
           await tester.pumpWidget(createTestWidget());
           expect(chartVirtualRects, actualChartVirtualRects);
 
           final transformationController = getTransformationController(tester);
-          transformationController!.value = Matrix4.identity()..scale(2.0);
+          transformationController!.value = Matrix4.identity()
+            ..scaleByDouble(2, 2, 2, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
 
@@ -1332,7 +1343,8 @@ void main() {
 
           final transformationController2 = getTransformationController(tester);
           expect(transformationController2, transformationController);
-          transformationController2!.value = Matrix4.identity()..scale(3.0);
+          transformationController2!.value = Matrix4.identity()
+            ..scaleByDouble(3, 3, 3, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
         },
@@ -1341,13 +1353,14 @@ void main() {
       testWidgets(
         'oldWidget.controller is null and widget.controller is not null: '
         'disposes old controller and sets up widget.controller with listeners',
-        (WidgetTester tester) async {
+        (tester) async {
           final actualChartVirtualRects = <Object?>[isNotScaled];
           await tester.pumpWidget(createTestWidget());
           expect(chartVirtualRects, actualChartVirtualRects);
 
           final transformationController = getTransformationController(tester);
-          transformationController!.value = Matrix4.identity()..scale(2.0);
+          transformationController!.value = Matrix4.identity()
+            ..scaleByDouble(2, 2, 2, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
 
@@ -1363,7 +1376,8 @@ void main() {
             () => transformationController.addListener(() {}),
             throwsA(isA<FlutterError>()),
           );
-          transformationController2.value = Matrix4.identity()..scale(2.0);
+          transformationController2.value = Matrix4.identity()
+            ..scaleByDouble(2, 2, 2, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
         },
@@ -1373,7 +1387,7 @@ void main() {
         'oldWidget.controller is not null and widget.controller is null: '
         'removes listeners from old controller and sets up new controller '
         'with listeners',
-        (WidgetTester tester) async {
+        (tester) async {
           final actualChartVirtualRects = <Object?>[isNotScaled];
           final transformationController = TransformationController();
           await tester.pumpWidget(
@@ -1381,7 +1395,8 @@ void main() {
           );
           expect(chartVirtualRects, actualChartVirtualRects);
 
-          transformationController.value = Matrix4.identity()..scale(2.0);
+          transformationController.value = Matrix4.identity()
+            ..scaleByDouble(2, 2, 2, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
 
@@ -1394,7 +1409,8 @@ void main() {
           // ignore: invalid_use_of_protected_member
           expect(transformationController.hasListeners, false);
           transformationController.addListener(() {}); // throws if disposed
-          transformationController2!.value = Matrix4.identity()..scale(2.0);
+          transformationController2!.value = Matrix4.identity()
+            ..scaleByDouble(2, 2, 2, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
         },
@@ -1405,7 +1421,7 @@ void main() {
         'controllers are different: '
         'removes listeners from old controller and sets up '
         'widget.controller with listeners',
-        (WidgetTester tester) async {
+        (tester) async {
           final actualChartVirtualRects = <Object?>[isNotScaled];
           final transformationController = TransformationController();
           await tester.pumpWidget(
@@ -1413,7 +1429,8 @@ void main() {
           );
           expect(chartVirtualRects, actualChartVirtualRects);
 
-          transformationController.value = Matrix4.identity()..scale(2.0);
+          transformationController.value = Matrix4.identity()
+            ..scaleByDouble(2, 2, 2, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
 
@@ -1429,7 +1446,8 @@ void main() {
           // ignore: invalid_use_of_protected_member
           expect(transformationController.hasListeners, false);
           transformationController.addListener(() {}); // throws if disposed
-          transformationController2.value = Matrix4.identity()..scale(2.0);
+          transformationController2.value = Matrix4.identity()
+            ..scaleByDouble(2, 2, 2, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
         },
@@ -1438,7 +1456,7 @@ void main() {
       testWidgets(
         'oldWidget.controller is not null and widget.controller is not null, '
         'controllers are the same: keeps old controller',
-        (WidgetTester tester) async {
+        (tester) async {
           final actualChartVirtualRects = <Object?>[isNotScaled];
           final transformationController = TransformationController();
           await tester.pumpWidget(
@@ -1448,7 +1466,8 @@ void main() {
           );
           expect(chartVirtualRects, actualChartVirtualRects);
 
-          transformationController.value = Matrix4.identity()..scale(2.0);
+          transformationController.value = Matrix4.identity()
+            ..scaleByDouble(2, 2, 2, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
 
@@ -1461,7 +1480,8 @@ void main() {
 
           final transformationController2 = getTransformationController(tester);
           expect(transformationController2, transformationController);
-          transformationController.value = Matrix4.identity()..scale(3.0);
+          transformationController.value = Matrix4.identity()
+            ..scaleByDouble(3, 3, 3, 1);
           await tester.pump();
           expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
         },
@@ -1470,7 +1490,7 @@ void main() {
 
     testWidgets(
       'sets chartVirtualRect to null, when scaling is updated to 1.0',
-      (WidgetTester tester) async {
+      (tester) async {
         final transformationController = TransformationController();
         final chartVirtualRects = <Rect?>[];
         final actualChartVirtualRects = <Object?>[isNotScaled];
@@ -1491,18 +1511,19 @@ void main() {
         );
         expect(chartVirtualRects, actualChartVirtualRects);
 
-        transformationController.value = Matrix4.identity()..scale(2.0);
+        transformationController.value = Matrix4.identity()
+          ..scaleByDouble(2, 2, 2, 1);
         await tester.pump();
         expect(chartVirtualRects, actualChartVirtualRects..add(isScaled));
 
-        transformationController.value = Matrix4.identity()..scale(1.0);
+        transformationController.value = Matrix4.identity()
+          ..scaleByDouble(1, 1, 1, 1);
         await tester.pump();
         expect(chartVirtualRects, actualChartVirtualRects..add(isNotScaled));
       },
     );
 
-    testWidgets('does not dispose external controller',
-        (WidgetTester tester) async {
+    testWidgets('does not dispose external controller', (tester) async {
       final controller = TransformationController();
       await tester.pumpWidget(
         MaterialApp(

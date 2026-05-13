@@ -18,6 +18,7 @@ import '../data_pool.dart';
 import 'line_chart_painter_test.mocks.dart';
 
 @GenerateMocks([Canvas, CanvasWrapper, BuildContext, Utils, LineChartPainter])
+@GenerateNiceMocks([MockSpec<LinearGradient>()])
 void main() {
   group('paint()', () {
     test('test 1', () {
@@ -77,8 +78,7 @@ void main() {
           ]),
         ],
         lineTouchData: LineTouchData(
-          getTouchedSpotIndicator:
-              (LineChartBarData barData, List<int> spotIndexes) {
+          getTouchedSpotIndicator: (barData, spotIndexes) {
             return spotIndexes.asMap().entries.map((entry) {
               final i = entry.key;
               if (i == 0) {
@@ -159,8 +159,7 @@ void main() {
         lineBarsData: lineChartBarsData,
         clipData: const FlClipData.all(),
         lineTouchData: LineTouchData(
-          getTouchedSpotIndicator:
-              (LineChartBarData barData, List<int> spotIndexes) {
+          getTouchedSpotIndicator: (barData, spotIndexes) {
             return List.generate(
               spotIndexes.length + 1,
               (index) {
@@ -284,8 +283,7 @@ void main() {
           ]),
         ],
         lineTouchData: LineTouchData(
-          getTouchedSpotIndicator:
-              (LineChartBarData barData, List<int> spotIndexes) {
+          getTouchedSpotIndicator: (barData, spotIndexes) {
             return spotIndexes.asMap().entries.map((entry) {
               final i = entry.key;
               if (i == 0) {
@@ -932,6 +930,51 @@ void main() {
         expect(captured.errorTextStyle.fontSize, spots[i].y);
       }
       verifyNever(mockCanvasWrapper.drawText(any, any, any));
+    });
+
+    test('test 4 - asymmetric yError maps lowerBy downward and upperBy upward',
+        () {
+      const viewSize = Size(400, 400);
+
+      final barData = LineChartBarData(
+        spots: [
+          const FlSpot(
+            5,
+            5,
+            yError: FlErrorRange(lowerBy: 1, upperBy: 3),
+          ),
+        ],
+      );
+
+      final data = LineChartData(
+        minY: 0,
+        maxY: 10,
+        lineBarsData: [barData],
+      );
+
+      final lineChartPainter = LineChartPainter();
+      final holder =
+          PaintHolder<LineChartData>(data, data, TextScaler.noScaling);
+      final mockCanvasWrapper = MockCanvasWrapper();
+      when(mockCanvasWrapper.size).thenAnswer((realInvocation) => viewSize);
+      when(mockCanvasWrapper.canvas).thenReturn(MockCanvas());
+
+      lineChartPainter.drawErrorIndicatorData(
+        mockCanvasWrapper,
+        barData,
+        holder,
+      );
+
+      final result = verify(
+        mockCanvasWrapper.drawErrorIndicator(any, any, any, captureAny, any),
+      )..called(1);
+      final rect = result.captured[0] as Rect;
+      // getPixelY(y) = 400 - (y/10)*400
+      // spot y=5 -> pixel 200
+      // upper bound y=8 -> pixel 80, relative top = 80 - 200 = -120
+      // lower bound y=4 -> pixel 240, relative bottom = 240 - 200 = 40
+      expect(rect.top, -120);
+      expect(rect.bottom, 40);
     });
   });
 
@@ -2172,14 +2215,13 @@ void main() {
         FlSpot(8, 9),
       ];
 
+      final mockLinearGradient = MockLinearGradient();
       final lineChartBarData1 = LineChartBarData(
         spots: barSpots1,
         barWidth: 80,
         isStrokeCapRound: true,
         isStepLineChart: true,
-        gradient: const LinearGradient(
-          colors: [Color(0xF0F0F0F0), Color(0x0100FF00)],
-        ),
+        gradient: mockLinearGradient,
         dashArray: [1, 2, 3],
       );
 
@@ -2199,6 +2241,11 @@ void main() {
       final mockCanvasWrapper = MockCanvasWrapper();
       when(mockCanvasWrapper.size).thenAnswer((realInvocation) => viewSize);
       when(mockCanvasWrapper.canvas).thenReturn(MockCanvas());
+      // just to provide a dummy Shader, don't care about its value
+      provideDummy<Shader>(
+        const LinearGradient(colors: [Color(0xF0F0F0F0), Color(0x0100FF00)])
+            .createShader(Rect.zero),
+      );
 
       final barPath = Path()
         ..moveTo(10, 10)
@@ -2222,6 +2269,29 @@ void main() {
       expect(paint.shader != null, true);
       expect(paint.maskFilter, null);
       expect(paint.strokeWidth, 80);
+
+      final createShaderWithRectAroundTheLine =
+          verify(mockLinearGradient.createShader(captureAny))..called(1);
+      expect(
+        createShaderWithRectAroundTheLine.captured.single,
+        const Rect.fromLTRB(10, 10, 80, 10),
+      );
+
+      lineChartPainter.drawBar(
+        mockCanvasWrapper,
+        barPath,
+        lineChartBarData1.copyWith(
+          gradientArea: LineChartGradientArea.wholeChart,
+        ),
+        holder,
+      );
+
+      final createShaderWithRectWholeChart =
+          verify(mockLinearGradient.createShader(captureAny))..called(1);
+      expect(
+        createShaderWithRectWholeChart.captured.single,
+        Offset.zero & viewSize,
+      );
     });
   });
 
@@ -2592,6 +2662,14 @@ void main() {
                 direction: LabelDirection.vertical,
               ),
             ),
+            VerticalLine(
+              x: 9,
+              label: VerticalLineLabel(
+                show: true,
+                labelResolver: verticalLabelResolver,
+                direction: LabelDirection.verticalMirrored,
+              ),
+            ),
           ],
           horizontalLines: [
             HorizontalLine(
@@ -2607,6 +2685,14 @@ void main() {
                 show: true,
                 labelResolver: horizontalLabelResolver,
                 direction: LabelDirection.vertical,
+              ),
+            ),
+            HorizontalLine(
+              y: 9,
+              label: HorizontalLineLabel(
+                show: true,
+                labelResolver: horizontalLabelResolver,
+                direction: LabelDirection.verticalMirrored,
               ),
             ),
           ],
@@ -2740,7 +2826,7 @@ void main() {
         tooltipPadding: const EdgeInsets.all(12),
         fitInsideHorizontally: true,
         fitInsideVertically: true,
-        getTooltipItems: (List<LineBarSpot> touchedSpots) {
+        getTooltipItems: (touchedSpots) {
           return touchedSpots
               .map((e) => LineTooltipItem(e.barIndex.toString(), textStyle1))
               .toList();
@@ -2883,7 +2969,7 @@ void main() {
         tooltipHorizontalAlignment: FLHorizontalAlignment.left,
         tooltipPadding: const EdgeInsets.all(12),
         fitInsideVertically: true,
-        getTooltipItems: (List<LineBarSpot> touchedSpots) {
+        getTooltipItems: (touchedSpots) {
           return touchedSpots
               .map((e) => LineTooltipItem(e.barIndex.toString(), textStyle1))
               .toList();
@@ -3006,7 +3092,7 @@ void main() {
         tooltipHorizontalAlignment: FLHorizontalAlignment.right,
         tooltipPadding: const EdgeInsets.all(12),
         fitInsideVertically: true,
-        getTooltipItems: (List<LineBarSpot> touchedSpots) {
+        getTooltipItems: (touchedSpots) {
           return touchedSpots
               .map((e) => LineTooltipItem(e.barIndex.toString(), textStyle1))
               .toList();
@@ -3142,7 +3228,7 @@ void main() {
         tooltipHorizontalAlignment: FLHorizontalAlignment.right,
         tooltipPadding: const EdgeInsets.all(12),
         fitInsideVertically: true,
-        getTooltipItems: (List<LineBarSpot> touchedSpots) {
+        getTooltipItems: (touchedSpots) {
           return touchedSpots
               .map((e) => LineTooltipItem(e.barIndex.toString(), textStyle1))
               .toList();
@@ -3275,7 +3361,7 @@ void main() {
         tooltipHorizontalAlignment: FLHorizontalAlignment.right,
         tooltipPadding: const EdgeInsets.all(12),
         fitInsideVertically: true,
-        getTooltipItems: (List<LineBarSpot> touchedSpots) {
+        getTooltipItems: (touchedSpots) {
           return touchedSpots
               .map((e) => LineTooltipItem(e.barIndex.toString(), textStyle1))
               .toList();
@@ -3366,7 +3452,7 @@ void main() {
           tooltipHorizontalAlignment: FLHorizontalAlignment.right,
           tooltipPadding: const EdgeInsets.all(12),
           fitInsideVertically: true,
-          getTooltipItems: (List<LineBarSpot> touchedSpots) {
+          getTooltipItems: (touchedSpots) {
             return touchedSpots
                 .map((e) => LineTooltipItem(e.barIndex.toString(), textStyle1))
                 .toList();
@@ -3387,11 +3473,11 @@ void main() {
                 const FlLine(color: Colors.red, strokeWidth: 1),
                 FlDotData(
                   getDotPainter: (
-                    FlSpot spot,
-                    double xPercentage,
-                    LineChartBarData bar,
-                    int index, {
-                    double? size,
+                    spot,
+                    xPercentage,
+                    bar,
+                    index, {
+                    size,
                   }) =>
                       FlDotCirclePainter(
                     color: Colors.red,
@@ -3969,7 +4055,7 @@ void main() {
         showingTooltipIndicators: [],
         titlesData: const FlTitlesData(show: false),
         lineTouchData: LineTouchData(
-          distanceCalculator: (Offset a, Offset b) {
+          distanceCalculator: (a, b) {
             final dx = a.dx - b.dx;
             final dy = a.dy - b.dy;
             return math.sqrt(dx * dx + dy * dy);

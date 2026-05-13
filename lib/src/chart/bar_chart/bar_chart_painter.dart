@@ -98,6 +98,7 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
     }
 
     drawBars(canvasWrapper, _groupBarsPosition!, holder);
+    drawBarLabels(context, canvasWrapper, _groupBarsPosition!, holder);
 
     drawErrorIndicatorData(canvasWrapper, _groupBarsPosition!, holder);
 
@@ -310,21 +311,81 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
 
           // draw rod stack
           if (barRod.rodStackItems.isNotEmpty) {
+            // Calculate scale factor to ensure minimum height for corner radius
+            final totalHeightPixels =
+                (getPixelY(barRod.fromY, viewSize, holder) -
+                        getPixelY(barRod.toY, viewSize, holder))
+                    .abs();
+
+            final scaleFactor = totalHeightPixels < cornerHeight
+                ? cornerHeight / totalHeightPixels
+                : 1.0;
+
             for (var i = 0; i < barRod.rodStackItems.length; i++) {
               final stackItem = barRod.rodStackItems[i];
-              final stackFromY = getPixelY(stackItem.fromY, viewSize, holder);
-              final stackToY = getPixelY(stackItem.toY, viewSize, holder);
+
+              var stackFromY = getPixelY(stackItem.fromY, viewSize, holder);
+              var stackToY = getPixelY(stackItem.toY, viewSize, holder);
+
+              // Apply scale factor only when needed
+              if (scaleFactor > 1.0) {
+                final basePixelY = getPixelY(barRod.fromY, viewSize, holder);
+                stackFromY =
+                    basePixelY - (basePixelY - stackFromY) * scaleFactor;
+                stackToY = basePixelY - (basePixelY - stackToY) * scaleFactor;
+              }
 
               final isNegative = stackItem.toY < stackItem.fromY;
-              _barPaint.color = stackItem.color;
               final rect = isNegative
                   ? Rect.fromLTRB(left, stackFromY, right, stackToY)
                   : Rect.fromLTRB(left, stackToY, right, stackFromY);
+              _barPaint.setColorOrGradient(
+                stackItem.color,
+                stackItem.gradient,
+                rect,
+              );
               canvasWrapper
                 ..save()
                 ..clipRect(rect)
                 ..drawRRect(barRRect, _barPaint)
                 ..restore();
+              if (stackItem.label != null) {
+                final textStyle = stackItem.labelStyle ??
+                    const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    );
+
+                final labelText = stackItem.label!;
+                final textSpan = TextSpan(text: labelText, style: textStyle);
+                final textPainter = TextPainter(
+                  text: textSpan,
+                  textAlign: TextAlign.center,
+                  textDirection: TextDirection.ltr,
+                  textScaler: holder.textScaler,
+                )..layout();
+
+                // Calculate rotation
+                final rotation = -holder.data.rotationQuarterTurns * (pi / 2);
+                final centerX = x;
+                final centerY = (stackFromY + stackToY) / 2;
+
+                // Check if text fits vertically
+                final segmentHeight = (stackFromY - stackToY).abs();
+                if (textPainter.height < segmentHeight) {
+                  canvasWrapper
+                    ..save()
+                    ..translate(centerX, centerY)
+                    ..rotate(rotation)
+                    ..translate(
+                      -textPainter.width / 2,
+                      -textPainter.height / 2,
+                    );
+                  textPainter.paint(canvasWrapper.canvas, Offset.zero);
+                  canvasWrapper.restore();
+                }
+              }
 
               // draw border stroke for each stack item
               drawStackItemBorderStroke(
@@ -356,6 +417,61 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
             );
           }
         }
+      }
+    }
+  }
+
+  @visibleForTesting
+  void drawBarLabels(
+    BuildContext context,
+    CanvasWrapper canvasWrapper,
+    List<GroupBarsPosition> groupBarsPosition,
+    PaintHolder<BarChartData> holder,
+  ) {
+    final data = holder.data;
+    final viewSize = canvasWrapper.size;
+
+    for (var i = 0; i < data.barGroups.length; i++) {
+      final barGroup = data.barGroups[i];
+      for (var j = 0; j < barGroup.barRods.length; j++) {
+        final barRod = barGroup.barRods[j];
+        final rodLabel = barRod.label;
+        if (!rodLabel.show) continue;
+
+        final labelText = rodLabel.text;
+        final labelStyle = rodLabel.style;
+        if (labelText.isEmpty) continue;
+
+        final effectiveStyle =
+            Utils().getThemeAwareTextStyle(context, labelStyle);
+
+        final textSpan = TextSpan(text: labelText, style: effectiveStyle);
+        final textPainter = TextPainter(
+          text: textSpan,
+          textAlign: TextAlign.center,
+          textDirection: rodLabel.textDirection,
+          textScaler: holder.textScaler,
+        )..layout();
+
+        final x = groupBarsPosition[i].barsX[j];
+        final tipPixelY = getPixelY(barRod.toY, viewSize, holder);
+        final isUpward = barRod.toY >= barRod.fromY;
+
+        final drawX = x + rodLabel.offset.dx;
+        final drawY = isUpward
+            ? tipPixelY - rodLabel.offset.dy - textPainter.height
+            : tipPixelY + rodLabel.offset.dy;
+
+        final chartRotation = -data.rotationQuarterTurns * (pi / 2);
+        final labelAngle = rodLabel.angle * (pi / 180);
+
+        canvasWrapper
+          ..save()
+          ..translate(drawX, drawY + textPainter.height / 2)
+          ..rotate(chartRotation + labelAngle)
+          ..translate(-textPainter.width / 2, -textPainter.height / 2);
+        textPainter.paint(canvasWrapper.canvas, Offset.zero);
+        canvasWrapper.restore();
       }
     }
   }
@@ -500,11 +616,31 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
     final tooltipWidth = textWidth + tooltipData.tooltipPadding.horizontal;
     final tooltipHeight = textHeight + tooltipData.tooltipPadding.vertical;
 
-    final barTopY = min(barToYPixel.dy, barFromYPixel.dy);
-    final barBottomY = max(barToYPixel.dy, barFromYPixel.dy);
+    var barTopY = min(barToYPixel.dy, barFromYPixel.dy);
+    var barBottomY = max(barToYPixel.dy, barFromYPixel.dy);
     final drawTooltipOnTop = tooltipData.direction == TooltipDirection.top ||
         (tooltipData.direction == TooltipDirection.auto &&
             showOnRodData.isUpward());
+
+    // Shift tooltip anchor to avoid overlapping with rod label
+    final rodLabel = showOnRodData.label;
+    if (rodLabel.show && rodLabel.text.isNotEmpty) {
+      final labelStyle =
+          Utils().getThemeAwareTextStyle(context, rodLabel.style);
+      final labelSpan = TextSpan(text: rodLabel.text, style: labelStyle);
+      final labelPainter = TextPainter(
+        text: labelSpan,
+        textAlign: TextAlign.center,
+        textDirection: rodLabel.textDirection,
+        textScaler: holder.textScaler,
+      )..layout();
+      final labelSpace = labelPainter.height + rodLabel.offset.dy;
+      if (drawTooltipOnTop) {
+        barTopY -= labelSpace;
+      } else {
+        barBottomY += labelSpace;
+      }
+    }
 
     final tooltipOriginPoint = Offset(
       barX,
